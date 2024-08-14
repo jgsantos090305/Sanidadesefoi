@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Virtual Flamengo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #c00;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #111;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            background-color: #111;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Loja Oficial do Flamengo</h1>
+    </header>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Produtos</a>
+        <a href="#">Contato</a>
+    </nav>
+
+    <div class="container" id="product-list">
+        <!-- Produtos serão inseridos aqui -->
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Loja Oficial do Flamengo - Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        // Definindo o Custom Element para os produtos
+        class ProductCard extends HTMLElement {
+            connectedCallback() {
+                const id = this.getAttribute('id');
+                const name = this.getAttribute('name');
+                const price = this.getAttribute('price');
+                const image = this.getAttribute('image');
+
+                this.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="${image}" alt="${name}" style="max-width: 100%; height: auto;">
+                        <h3 style="color: #c00;">${name}</h3>
+                        <p style="color: #333;">R$ ${price}</p>
+                        <a href="produto.html?id=${id}" style="background-color: #c00; color: white; padding: 10px 20px; text-decoration: none;">Ver Detalhes</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Registrando o Custom Element
+        customElements.define('product-card', ProductCard);
+
+        // Buscando os produtos do arquivo db.json
+        fetch('db.json')
+            .then(response => response.json())
+            .then(data => {
+                const productList = document.getElementById('product-list');
+                data.products.forEach(product => {
+                    const productCard = document.createElement('product-card');
+                    productCard.setAttribute('id', product.id);
+                    productCard.setAttribute('name', product.name);
+                    productCard.setAttribute('price', product.price);
+                    productCard.setAttribute('image', product.image);
+                    productList.appendChild(productCard);
+                });
+            });
+    </script>
+</body>
+</html>
+
