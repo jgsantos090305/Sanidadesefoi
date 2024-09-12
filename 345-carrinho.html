@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Virtual Flamengo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #c00;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #111;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            background-color: #111;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+
+        /* Add cart styles */
+        .cart {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: #c00;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cart ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cart li {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .cart li:last-child {
+            border-bottom: none;
+        }
+
+        .cart .total {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .cart .empty {
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Loja Oficial do Flamengo</h1>
+    </header>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">Produtos</a>
+        <a href="#">Contato</a>
+    </nav>
+
+    <div class="container" id="product-list">
+    </div>
+
+    <div class="cart">
+        <h2>Carrinho</h2>
+        <ul id="cart-list"></ul>
+        <p class="total">Total: R$ 0,00</p>
+        <p class="empty">Seu carrinho está vazio.</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Loja Oficial do Flamengo - Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        
+        class ProductCard extends HTMLElement {
+            connectedCallback() {
+                const id = this.getAttribute('id');
+                const name = this.getAttribute('name');
+                const price = this.getAttribute('price');
+                const image = this.getAttribute('image');
+
+                this.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img src="${image}" alt="${name}" style="max-width: 100%; height: auto;">
+                        <h3 style="color: #c00;">${name}</h3>
+                        <p style="color: #333;">R$ ${price}</p>
+                        <a href="produto.html?id=${id}" style="background-color: #c00; color: white; padding: 10px 20px; text-decoration: none;">Ver Detalhes</a>
+                        <button class="add-to-cart" data-id="${id}" data-name="${name}" data-price="${price}">Adicionar ao Carrinho</button>
+                    </div>
+                `;
+            }
+        }
+
+        
+        customElements.define('product-card', ProductCard);
+
+        
+        fetch('db.json')
+            .then(response => response.json())
+            .then(data => {
+                const productList = document.getElementById('product-list');
+                data.products.forEach(product => {
+                    const productCard = document.createElement('product-card');
+                    productCard.setAttribute('id', product.id);
+                    productCard.setAttribute('name', product.name);
+                    productCard.setAttribute('price', product.price);
+                    productCard.setAttribute('image', product.image);
+                    productList.appendChild(productCard);
+                });
+            });
+
+        
+        class Cart {
+            constructor() {
+                this.products = [];
+                this.total = 0;
+            }
+
+            addProduct(product) {
+                this.products.push(product);
+                this.updateTotal();
+            }
+
+            removeProduct(productId) {
+                this.products = this.products.filter(product => product.id !== productId);
+                this.updateTotal();
+            }
+
+            updateTotal() {
+                this.total = this.products.reduce((acc, product) => acc + product.price, 0);
+                document.querySelector('.total').textContent = `Total: R$ ${this.total.toFixed(2)}`;
+            }
+        }
+
+        const cart = new Cart();
+
+        
+        document.addEventListener('click', event => {
+            if (event.target.classList.contains('add-to-cart')) {
+                const productId = event.target.getAttribute('data-id');
+                const productName = event.target.getAttribute('data-name');
+                const productPrice = event.target.getAttribute('data-price');
+                cart.addProduct({ id: productId, name: productName, price: productPrice });
+                updateCartUI();
+            }
+        });
+
+        
+        function updateCartUI() {
+            const cartList = document.getElementById('cart-list');
+            cartList.innerHTML = '';
+            cart.products.forEach(product => {
+                const cartItem = document.createElement('li');
+                cartItem.textContent = `${product.name} - R$ ${product.price}`;
+                cartList.appendChild(cartItem);
+            });
+
+            if (cart.products.length === 0) {
+                document.querySelector('.empty').style.display = 'block';
+            } else {
+                document.querySelector('.empty').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
